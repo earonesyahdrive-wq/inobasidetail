@@ -514,3 +514,109 @@ ${regulasi}
     };
 
 })();
+
+// =========================
+// FIX FINAL CHROME: REGULASI & ANALISA TIDAK HILANG
+// TANPA MERUBAH LOGIC ASLI
+// =========================
+
+(function () {
+
+    const oldShowAI = window.showAI;
+
+    window.showAI = function (res) {
+
+        const safe = res || {
+            kategori: "-",
+            ringkasan: "-",
+            saran: ["-"],
+            risiko: ["-"]
+        };
+
+        const regulasi =
+`📜 DASAR REGULASI:
+
+1. UU No. 25 Tahun 2009 - Pelayanan Publik
+2. UU No. 23 Tahun 2014 - Pemerintahan Daerah
+3. Perpres No. 95 Tahun 2018 - SPBE
+4. PermenPANRB No. 5 Tahun 2020
+5. PP No. 96 Tahun 2012 - Standar Pelayanan`;
+
+        const content =
+`📊 HASIL ANALISA INOVASI
+
+🧠 KATEGORI:
+${safe.kategori}
+
+📌 RINGKASAN:
+${safe.ringkasan}
+
+💡 SARAN:
+- ${(safe.saran || []).join("\n- ")}
+
+⚠️ RISIKO:
+- ${(safe.risiko || []).join("\n- ")}
+
+📜 REGULASI:
+${regulasi}`;
+
+// =========================
+// FIX CHROME SAFE DISPLAY
+// (replace alert)
+// =========================
+        showModal(content);
+    };
+
+    function showModal(text) {
+        let modal = document.getElementById("aiModal");
+
+        if (!modal) {
+            modal = document.createElement("div");
+            modal.id = "aiModal";
+            modal.style = `
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 999999;
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 20px;
+                    width: 90%;
+                    max-width: 500px;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    border-radius: 10px;
+                    white-space: pre-wrap;
+                    font-family: Arial;
+                ">
+                    <pre id="aiText"></pre>
+                    <button id="closeAI" style="
+                        margin-top: 10px;
+                        padding: 8px 12px;
+                        border: none;
+                        background: #ff7a00;
+                        color: white;
+                        border-radius: 5px;
+                    ">Tutup</button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            modal.querySelector("#closeAI").onclick = () => {
+                modal.style.display = "none";
+            };
+        }
+
+        modal.style.display = "flex";
+        modal.querySelector("#aiText").innerText = text;
+    }
+
+})();
