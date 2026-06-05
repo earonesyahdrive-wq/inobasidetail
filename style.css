@@ -1,0 +1,332 @@
+:root {
+    --primary: #ff8c42;       /* orange muda */
+    --secondary: #ffd166;     /* kuning muda */
+    --accent: #ffb703;        /* kuning kuat */
+    --bg: #fff8ef;            /* background creamy */
+    --card: #ffffff;
+    --text: #2b2b2b;
+    --muted: #7a7a7a;
+    --border: #f1e3d3;
+    --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--bg), #fffdf7);
+    color: var(--text);
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1150px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HERO */
+.hero {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 35px;
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+}
+
+.hero h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.hero p {
+    opacity: 0.9;
+}
+
+/* STAT */
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+}
+
+.stat-card h2 {
+    margin: 0;
+    color: var(--primary);
+}
+
+/* CARD */
+.card {
+    background: var(--card);
+    margin-top: 20px;
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.card-title {
+    margin-top: 0;
+    font-size: 20px;
+}
+
+/* FORM */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+label {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 11px;
+    margin: 6px 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    transition: 0.2s;
+    background: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255,140,66,0.15);
+}
+
+/* BUTTON */
+button {
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 500;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+}
+
+.btn-edit {
+    background: var(--secondary);
+    color: #333;
+}
+
+.btn-success {
+    background: #fff1d6;
+    border: 1px solid var(--secondary);
+    color: #333;
+}
+
+/* TABLE */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* =========================
+   TABLE FONT SMALLER (-1pt)
+========================= */
+table {
+    font-size: 11px; /* turun dari default 12px */
+}
+
+table th {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px;
+}
+
+table td {
+    font-size: 11px;
+    padding: 8px;
+}
+
+/* optional: biar lebih rapi */
+table {
+    border-collapse: collapse;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 12px;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+tr:hover {
+    background: #fff3e6;
+}
+
+/* INPUT SEARCH */
+#cari {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+}
+
+/* LOADING */
+.loading {
+    display: none;
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: var(--primary);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+/* TOAST */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #333;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+table button {
+    background: #ff8c42;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+table button:hover {
+    opacity: 0.85;
+}
+
+.btn-analisa {
+    background: #ffb703;
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.btn-analisa:hover {
+    background: #ffa000;
+}
+
+/* =========================
+   HERO COMPACT (FIX)
+========================= */
+.hero {
+    text-align: center;
+    padding: 18px 14px;   /* sebelumnya besar, sekarang diperkecil */
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #ff8c42, #ffb703);
+    border-radius: 14px;
+    color: white;
+}
+
+/* Judul */
+.hero h1 {
+    font-size: 20px;      /* diperkecil dari default besar */
+    margin: 0 0 6px 0;
+    font-weight: 700;
+}
+
+/* Subjudul */
+.hero p {
+    font-size: 13px;
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* =========================
+   STAT BOX COMPACT
+========================= */
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.hero-stats div {
+    background: rgba(255,255,255,0.15);
+    padding: 8px;
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+}
+
+.hero-stats h2 {
+    font-size: 16px;
+    margin: 0;
+}
+
+.hero-stats span {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+/* =========================
+   RESPONSIVE HERO
+========================= */
+@media (max-width: 768px) {
+    .hero {
+        padding: 14px;
+    }
+
+    .hero h1 {
+        font-size: 18px;
+    }
+
+    .hero-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

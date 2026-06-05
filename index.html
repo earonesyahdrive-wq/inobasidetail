@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Ide & Inovasi</title>
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- STYLE -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- LOADING -->
+<div class="loading" id="loading" style="display:none;">Memproses...</div>
+<div class="toast" id="toast"></div>
+
+<div class="container">
+
+    <!-- HERO -->
+    <section class="hero">
+        <h1>🚀 Administratori</h1>
+        <p>Sistem manajemen penyampaian inovasi</p>
+
+        <div class="hero-stats">
+            <div>
+                <h2 id="statTotal">0</h2>
+                <span>Total</span>
+            </div>
+
+
+            <div>
+                <h2 id="statDigital">0</h2>
+                <span>Digitalisasi</span>
+            </div>
+
+            <div>
+                <h2 id="statPelayanan">0</h2>
+                <span>Pelayanan</span>
+            </div>
+
+            <div>
+                <h2 id="statAdmin">0</h2>
+                <span>Administrasi</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORM -->
+    <section class="card">
+
+        <h2>📝 Form Ide & Inovasi</h2>
+
+        <form id="formIde">
+
+            <label>Nama Pegawai</label>
+            <input type="text" id="nama" required>
+
+            <label>Unit Kerja</label>
+            <input type="text" id="unitKerja" required>
+
+            <label>Judul Inovasi</label>
+            <input type="text" id="judul" required>
+
+            <label>Kategori</label>
+            <select id="kategori" required>
+                <option value="">Pilih</option>
+                <option value="Digitalisasi">Digitalisasi</option>
+                <option value="Pelayanan">Pelayanan</option>
+                <option value="Administrasi">Administrasi</option>
+                <option value="Pengawasan">Pengawasan</option>
+            </select>
+
+            <label>Ketua Tim</label>
+            <input type="text" id="ketuaTim" required>
+
+            <label>Latar Belakang</label>
+            <textarea id="latarBelakang" required></textarea>
+
+            <label>Deskripsi</label>
+            <textarea id="deskripsi" required></textarea>
+
+            <hr>
+
+            <!-- DASAR HUKUM -->
+            <h3>📌 Dasar Hukum</h3>
+            <div id="daftarDasarHukum">
+                <input type="text" class="dasarHukum" placeholder="Dasar hukum">
+            </div>
+            <button type="button" id="btnTambahDasarHukum">+ Tambah</button>
+
+            <hr>
+
+            <!-- ANGGOTA -->
+            <h3>👥 Anggota Tim</h3>
+            <div id="daftarAnggota">
+                <input type="text" class="anggota" placeholder="Nama anggota">
+            </div>
+            <button type="button" id="btnTambahAnggota">+ Tambah</button>
+
+            <hr>
+
+            <!-- LAMPIRAN -->
+            <h3>📎 Lampiran PDF</h3>
+            <input type="file" id="lampiran" accept="application/pdf">
+
+            <br><br>
+
+            <!-- BTN SIMPAN (INI PENTING) -->
+            <button type="button" id="btnSimpan" class="btn-save">
+                💾 Simpan Data
+            </button>
+
+<div style="width:100%;background:#eee;height:8px;border-radius:10px;margin-top:10px;overflow:hidden;">
+   toastMsg("Memulai upload...");
+setLoading(true);
+ <div id="uploadProgress" style="
+        width:0%;
+        height:100%;
+        background:linear-gradient(90deg,#ff8c42,#ffb703);
+        transition:0.2s;
+    "></div>
+    setLoading(false);
+</div>
+
+            <button type="button" id="btnReset" class="btn-edit">
+                🔄 Reset
+            </button>
+
+        </form>
+
+    </section>
+
+    <!-- TABEL -->
+    <section class="card">
+
+        <h2>📊 Daftar Inovasi</h2>
+
+        <table border="1" width="100%">
+            <thead>
+                <tr>
+                    <th>Judul</th>
+                    <th>Unit</th>
+                    <th>Kategori</th>
+                    <th>Tanggal</th>
+                    <th>Detail</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody id="tbodyIde"></tbody>
+        </table>
+
+    </section>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<!-- CONFIG & APP -->
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<canvas id="chartKategori"></canvas>
+<canvas id="chartRanking"></canvas>
+
+</body>
+</html>
