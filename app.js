@@ -410,3 +410,107 @@ document.getElementById("btnReset").onclick = resetForm;
     };
 
 })();
+
+// =========================
+// PATCH FINAL: ANALISA + REGULASI FIX
+// TANPA MERUBAH KODE ASLI
+// =========================
+
+(function () {
+
+    // backup fungsi lama
+    const oldShowAI = window.showAI;
+    const oldAnalisaAI = window.analisaAI;
+
+    // =========================
+    // FIX 1: FORCE STABLE ANALISA AI
+    // =========================
+    window.analisaAI = function (id) {
+
+        try {
+            const promise = db.ref("ide/" + id).once("value");
+
+            promise.then(snap => {
+                const data = snap.val() || {};
+
+                // paksa pakai engine asli kalau ada
+                let result;
+                try {
+                    result = oldAnalisaAI ? generateAIAnalysis(data) : {
+                        kategori: "Normal",
+                        ringkasan: data.judul || "-",
+                        saran: ["Observasi lanjutan"],
+                        risiko: ["Belum terdeteksi"]
+                    };
+                } catch (e) {
+                    result = {
+                        kategori: "Normal",
+                        ringkasan: "-",
+                        saran: ["Fallback sistem aktif"],
+                        risiko: ["Fallback aktif"]
+                    };
+                }
+
+                // langsung tampilkan dengan showAI patch
+                window.__lastAI = result;
+                window.showAI(result);
+            });
+
+        } catch (err) {
+            console.error(err);
+            toastMsg("Analisa gagal dijalankan");
+        }
+    };
+
+    // =========================
+    // FIX 2: FORCE REGULASI SELALU MUNCUL
+    // =========================
+    window.showAI = function (res) {
+
+        const safe = res || window.__lastAI || {
+            kategori: "Tidak ada data",
+            ringkasan: "-",
+            saran: ["Tidak tersedia"],
+            risiko: ["Tidak tersedia"]
+        };
+
+        const regulasi =
+`📜 DASAR REGULASI:
+
+1. UU No. 25 Tahun 2009 - Pelayanan Publik
+2. UU No. 23 Tahun 2014 - Pemerintahan Daerah
+3. Perpres No. 95 Tahun 2018 - SPBE
+4. PermenPANRB No. 5 Tahun 2020 - Inovasi Pelayanan Publik
+5. PP No. 96 Tahun 2012 - Standar Pelayanan Publik`;
+
+        const msg =
+`📊 HASIL ANALISA INOVASI
+
+━━━━━━━━━━━━━━━━━━
+🧠 KATEGORI:
+${safe.kategori || "-"}
+
+━━━━━━━━━━━━━━━━━━
+📌 RINGKASAN:
+${safe.ringkasan || "-"}
+
+━━━━━━━━━━━━━━━━━━
+💡 SARAN:
+- ${(safe.saran || []).join("\n- ")}
+
+━━━━━━━━━━━━━━━━━━
+⚠️ RISIKO:
+- ${(safe.risiko || []).join("\n- ")}
+
+━━━━━━━━━━━━━━━━━━
+📜 REGULASI:
+${regulasi}
+`;
+
+        // anti cut-off di Android
+        setTimeout(() => {
+            alert(msg);
+        }, 80);
+    };
+
+})();
