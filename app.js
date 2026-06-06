@@ -158,6 +158,47 @@ let score = ai.score;
     if (probability >= 70) level = "Tinggi";
     else if (probability >= 40) level = "Sedang";
 
+function buildKesimpulan(item, level, probability) {
+    const bagian = [];
+
+    // 1. Judul & konteks
+    if (item.judul) {
+        bagian.push(`Inovasi "${item.judul}" memiliki fokus pada ${item.kategori || "bidang terkait"}.`);
+    }
+
+    // 2. Kualitas deskripsi
+    if (item.deskripsi && item.deskripsi.length > 120) {
+        bagian.push("Deskripsi sudah cukup lengkap dan mendukung implementasi.");
+    } else {
+        bagian.push("Deskripsi masih perlu diperjelas untuk meningkatkan pemahaman.");
+    }
+
+    // 3. Tim
+    const jumlahTim = item.anggota ? item.anggota.length : 0;
+
+    if (jumlahTim >= 4) {
+        bagian.push("Komposisi tim tergolong kuat dan kolaboratif.");
+    } else if (jumlahTim >= 2) {
+        bagian.push("Tim cukup, namun masih bisa diperluas untuk efektivitas.");
+    } else {
+        bagian.push("Tim masih kurang memadai untuk implementasi optimal.");
+    }
+
+    // 4. Level keputusan
+    if (level === "Tinggi") {
+        bagian.push("Secara keseluruhan, inovasi ini sangat layak untuk segera diimplementasikan.");
+    } else if (level === "Sedang") {
+        bagian.push("Inovasi ini potensial namun masih memerlukan penguatan konsep.");
+    } else {
+        bagian.push("Inovasi ini masih membutuhkan revisi signifikan sebelum dapat diterapkan.");
+    }
+
+    // 5. Probabilitas
+    bagian.push(`Tingkat kelayakan diperkirakan sekitar ${probability}%.`);
+
+    return bagian.join(" ");
+}
+
     return {
     	aiInsight:
     probability >= 80
@@ -194,12 +235,7 @@ let score = ai.score;
             "Pedoman Teknis"
         ],
 
-        kesimpulan:
-            level === "Tinggi"
-                ? "Sangat potensial untuk implementasi cepat."
-                : level === "Sedang"
-                    ? "Cukup potensial namun perlu penguatan."
-                    : "Perlu pengembangan lebih lanjut."
+        kesimpulan: buildKesimpulan(item, level, probability)
     };
 }
 
