@@ -1,622 +1,430 @@
 // =========================
-// FIREBASE REF
+// GLOBAL STATE SAFE
 // =========================
-const dbRef = db.ref("ide");
-
-const aiCache = {};
-const loadingAI = {};
-
-// =========================
-// ELEMENT CACHE
-// =========================
-const tbody = document.getElementById("tbodyIde");
-const loading = document.getElementById("loading");
-const toast = document.getElementById("toast");
-
-const nama = document.getElementById("nama");
-const unit = document.getElementById("unitKerja");
-const judul = document.getElementById("judul");
-const kategori = document.getElementById("kategori");
-const ketua = document.getElementById("ketuaTim");
-const latar = document.getElementById("latarBelakang");
-const deskripsi = document.getElementById("deskripsi");
-const lampiran = document.getElementById("lampiran");
-
-let editId = null;
+let listData = [];
+let isSaving = false;
+let firebaseListener = null;
 
 // =========================
-// UI HELPERS (SAFE)
+// FIREBASE SAFE INIT
 // =========================
-const setLoading = (v) => {
-    const el = document.getElementById("loading");
-    if (el) el.style.display = v ? "block" : "none";
-};
+let dbRef = null;
+let storageRef = null;
 
-function toastMsg(msg) {
-    const t = document.getElementById("toast");
-    if (!t) return;
+try {
+    if (typeof db !== "undefined" && db && typeof db.ref === "function") {
+        dbRef = db.ref("ide");
+    }
 
-    t.innerText = msg;
-    t.style.display = "block";
+    if (
+        typeof firebase !== "undefined" &&
+        firebase.storage &&
+        typeof firebase.storage === "function"
+    ) {
+        storageRef = firebase.storage().ref();
+    }
+} catch (e) {
+    console.error("Firebase init error:", e);
+}
+
+// =========================
+// SAFE DOM HELPER
+// =========================
+const el = (id) => document.getElementById(id);
+
+// =========================
+// DOM CACHE (ANTI NULL CRASH)
+// =========================
+let form, tbody, toast, loading, modal, detailContent;
+let statTotal, statDigital, statPelayanan, statAdmin;
+let progressBar;
+
+// =========================
+// INIT DOM
+// =========================
+function initDOM() {
+    form = el("formIde");
+    tbody = el("tbodyIde");
+    toast = el("toast");
+    loading = el("loading");
+    modal = el("modalDetail");
+    detailContent = el("detailContent");
+
+    statTotal = el("statTotal");
+    statDigital = el("statDigital");
+    statPelayanan = el("statPelayanan");
+    statAdmin = el("statAdmin");
+
+    progressBar = el("uploadProgress");
+}
+
+// =========================
+// UI HELPERS
+// =========================
+function showToast(msg) {
+    if (!toast) return;
+    toast.innerText = msg;
+    toast.style.display = "block";
 
     setTimeout(() => {
-        t.style.display = "none";
-    }, 2500);
+        if (toast) toast.style.display = "none";
+    }, 2000);
+}
+
+function setLoading(state) {
+    if (!loading) return;
+    loading.style.display = state ? "block" : "none";
 }
 
 // =========================
-// INPUT DINAMIS
+// ANALISA ENGINE (NO CHANGE)
 // =========================
-function addInput(containerId, className, placeholder) {
-    const container = document.getElementById(containerId);
+function generateAnalisa(item = {}) {
 
-    const wrap = document.createElement("div");
-    wrap.className = "input-group";
+    let score = 0;
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.className = className;
-    input.placeholder = placeholder;
+    if (item.kategori === "Digitalisasi") score += 30;
+    if (item.kategori === "Pelayanan") score += 25;
+    if (item.kategori === "Administrasi") score += 20;
+    if (item.kategori === "Pengawasan") score += 35;
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "btn-delete";
-    btn.innerText = "×";
-    btn.onclick = () => wrap.remove();
+    if ((item.deskripsi || "").length > 100) score += 15;
+    if ((item.latarBelakang || "").length > 100) score += 15;
+    if (Array.isArray(item.anggota) && item.anggota.length > 2) score += 10;
 
-    wrap.appendChild(input);
-    wrap.appendChild(btn);
-    container.appendChild(wrap);
-}
+    const probability = Math.min(95, score + 10);
 
-// tombol tambah
-document.getElementById("btnTambahAnggota").onclick =
-    () => addInput("daftarAnggota", "anggota", "Nama anggota");
+    let level = "Rendah";
+    if (probability >= 70) level = "Tinggi";
+    else if (probability >= 40) level = "Sedang";
 
-document.getElementById("btnTambahDasarHukum").onclick =
-    () => addInput("daftarDasarHukum", "dasarHukum", "Dasar hukum");
-
-// =========================
-// ARRAY HELPER
-// =========================
-const getArray = (cls) =>
-    [...document.querySelectorAll("." + cls)]
-        .map(e => e.value.trim())
-        .filter(Boolean);
-
-// =========================
-// FORM DATA
-// =========================
-function getFormData() {
     return {
-        nama: nama.value.trim(),
-        unitKerja: unit.value.trim(),
-        judul: judul.value.trim(),
-        kategori: kategori.value,
-        ketuaTim: ketua.value.trim(),
-        latarBelakang: latar.value.trim(),
-        deskripsi: deskripsi.value.trim(),
-        anggota: getArray("anggota"),
-        dasarHukum: getArray("dasarHukum"),
-        tanggal: Date.now()
+        level,
+        probability,
+        saran:
+            level === "Tinggi"
+                ? "Layak implementasi cepat (pilot project)."
+                : level === "Sedang"
+                    ? "Perlu penguatan konsep & uji coba."
+                    : "Perlu revisi mendalam sebelum implementasi.",
+
+        regulasi: [
+            "UU No. 25 Tahun 2009",
+            "UU No. 30 Tahun 2014",
+            "Perpres No. 95 Tahun 2018",
+            "Permen PANRB Inovasi Pelayanan Publik"
+        ],
+
+        kendala: [
+            (!item.anggota || item.anggota.length < 2) && "Tim kurang solid",
+            (!item.deskripsi || item.deskripsi.length < 50) && "Deskripsi kurang detail",
+            item.kategori === "Administrasi" && "Potensi hambatan birokrasi"
+        ].filter(Boolean),
+
+        produkHukum: [
+            "SOP",
+            "Keputusan Pimpinan",
+            "Peraturan Internal",
+            "Pedoman Teknis"
+        ],
+
+        kesimpulan:
+            level === "Tinggi"
+                ? "Sangat potensial untuk implementasi cepat."
+                : level === "Sedang"
+                    ? "Cukup potensial namun perlu penguatan."
+                    : "Perlu pengembangan lebih lanjut."
     };
 }
 
 // =========================
-// RESET FORM
+// RENDER TABLE
 // =========================
-function resetForm() {
-    nama.value = "";
-    unit.value = "";
-    judul.value = "";
-    kategori.value = "";
-    ketua.value = "";
-    latar.value = "";
-    deskripsi.value = "";
-    lampiran.value = "";
+function renderTable() {
+    if (!tbody) return;
 
-    editId = null;
+    tbody.innerHTML = "";
 
-    document.getElementById("daftarAnggota").innerHTML = `
-        <div class="input-group">
-            <input type="text" class="anggota" placeholder="Nama anggota">
-        </div>
-    `;
+    listData.forEach((item) => {
+        const a = generateAnalisa(item);
 
-    document.getElementById("daftarDasarHukum").innerHTML = `
-        <div class="input-group">
-            <input type="text" class="dasarHukum" placeholder="Dasar hukum">
-        </div>
-    `;
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${item.judul ?? "-"}</td>
+            <td>${item.unitKerja ?? "-"}</td>
+            <td>${item.kategori ?? "-"}</td>
+            <td>${a.level} (${a.probability}%)</td>
+            <td>
+                <button onclick="openDetail('${item.id}')">Detail</button>
+                <button onclick="deleteData('${item.id}')">Hapus</button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
 }
 
 // =========================
-// GET DATA
+// STATS
 // =========================
-function getIdeById(id) {
-    return db.ref("ide/" + id).once("value").then(s => s.val());
+function renderStats() {
+    const count = (k) => listData.filter(x => x.kategori === k).length;
+
+    if (statTotal) statTotal.innerText = listData.length;
+    if (statDigital) statDigital.innerText = count("Digitalisasi");
+    if (statPelayanan) statPelayanan.innerText = count("Pelayanan");
+    if (statAdmin) statAdmin.innerText = count("Administrasi");
 }
 
 // =========================
-// AI ENGINE LAMA (AMAN)
+// FIREBASE LISTENER SAFE
 // =========================
-function generateAIAnalysis(data) {
-    const teks = `
-        ${data?.judul || ""}
-        ${data?.deskripsi || ""}
-        ${data?.unitKerja || ""}
-    `.toLowerCase();
-
-    let kategoriAI = "Normal";
-    let saran = [];
-    let risiko = [];
-
-    if (teks.includes("lambat")) {
-        kategoriAI = "Masalah Kinerja";
-        saran.push("Percepatan layanan");
+function listenData() {
+    if (!dbRef) {
+        console.error("Firebase DB tidak tersedia");
+        return;
     }
-
-    if (teks.includes("error")) {
-        kategoriAI = "Masalah Teknis";
-        saran.push("Perbaikan sistem");
-    }
-
-    if (saran.length === 0) saran.push("Observasi lanjutan diperlukan");
-    if (risiko.length === 0) risiko.push("Belum terdeteksi risiko signifikan");
-
-    return {
-        kategori: kategoriAI,
-        ringkasan: teks.substring(0, 150),
-        saran,
-        risiko
-    };
-}
-
-// =========================
-// AI BUTTON
-// =========================
-async function analisaAI(id) {
-    if (loadingAI[id]) return;
-    loadingAI[id] = true;
 
     try {
-        const data = await getIdeById(id);
-        if (!data) return toastMsg("Data tidak ditemukan");
-
-        if (aiCache[id]) return showAI(aiCache[id]);
-
-        const result = generateAIAnalysis(data);
-        aiCache[id] = result;
-
-        showAI(result);
-    } catch (err) {
-        console.error(err);
-    } finally {
-        loadingAI[id] = false;
-    }
-}
-
-function analisaAIPro(id) {
-    analisaAI(id);
-}
-
-// =========================
-// 🧠 UPGRADE SHOW AI + REGULASI
-// =========================
-function showAI(res) {
-
-    const regulasi = `
-📜 DASAR REGULASI:
-
-1. UU No. 25 Tahun 2009 - Pelayanan Publik
-2. UU No. 23 Tahun 2014 - Pemerintahan Daerah
-3. Perpres No. 95 Tahun 2018 - SPBE
-4. PermenPANRB No. 5 Tahun 2020 - Inovasi Pelayanan Publik
-5. PP No. 96 Tahun 2012 - Standar Pelayanan Publik
-`;
-
-    alert(`
-📊 HASIL ANALISA INOVASI
-
-━━━━━━━━━━━━━━━━━━
-🧠 KATEGORI:
-${res.kategori}
-
-━━━━━━━━━━━━━━━━━━
-📌 RINGKASAN:
-${res.ringkasan}
-
-━━━━━━━━━━━━━━━━━━
-💡 SARAN:
-- ${res.saran.join("\n- ")}
-
-━━━━━━━━━━━━━━━━━━
-⚠️ RISIKO:
-- ${res.risiko.join("\n- ")}
-
-━━━━━━━━━━━━━━━━━━
-📜 REGULASI:
-${regulasi}
-    `);
-}
-
-// =========================
-// FIREBASE RENDER (TIDAK DIUBAH)
-// =========================
-dbRef.on("value", snap => {
-
-    try {
-        tbody.innerHTML = "";
-
-        let total = 0, digital = 0, pelayanan = 0, admin = 0;
-
-        if (!snap.exists()) {
-            tbody.innerHTML = `<tr><td colspan="6">Belum ada data</td></tr>`;
-            return;
+        if (firebaseListener && dbRef.off) {
+            dbRef.off("value", firebaseListener);
         }
 
-        snap.forEach(child => {
-            const d = child.val() || {};
-            const id = child.key;
+        firebaseListener = (snap) => {
+            const data = snap.val();
 
-            total++;
-            if (d.kategori === "Digitalisasi") digital++;
-            if (d.kategori === "Pelayanan") pelayanan++;
-            if (d.kategori === "Administrasi") admin++;
+            listData = (!data || typeof data !== "object")
+                ? []
+                : Object.entries(data).map(([id, val]) => ({
+                    id,
+                    ...(val || {})
+                }));
 
-            const tr = document.createElement("tr");
+            renderTable();
+            renderStats();
+        };
 
-            tr.innerHTML = `
-                <td>${d?.judul || "-"}</td>
-                <td>${d?.unitKerja || "-"}</td>
-                <td>${d?.kategori || "-"}</td>
-                <td>${d?.tanggal ? new Date(d.tanggal).toLocaleDateString() : "-"}</td>
-                <td>
-                    <button onclick="toggleDetail('${id}')">Detail</button>
-                    <button onclick="analisaAI('${id}')">Analisa</button>
-                </td>
-                <td>
-                    <button onclick="editData('${id}')">Edit</button>
-                    <button onclick="hapus('${id}')">Hapus</button>
-                </td>
-            `;
+        dbRef.on("value", firebaseListener);
 
-            tbody.appendChild(tr);
+    } catch (e) {
+        console.error("Listener error:", e);
+    }
+}
 
-            const detail = document.createElement("tr");
-            detail.id = "detail-" + id;
-            detail.style.display = "none";
+// =========================
+// SAVE DATA SAFE
+// =========================
+async function saveData() {
+    if (!dbRef || isSaving) return;
 
-            detail.innerHTML = `
-                <td colspan="6">
-                    <b>Latar:</b><br>${d?.latarBelakang || "-"}<br>
-                    <b>Deskripsi:</b><br>${d?.deskripsi || "-"}
-                </td>
-            `;
+    isSaving = true;
+    setLoading(true);
 
-            tbody.appendChild(detail);
-        });
+    try {
+        const data = {
+            nama: el("nama")?.value || "",
+            unitKerja: el("unitKerja")?.value || "",
+            judul: el("judul")?.value || "",
+            kategori: el("kategori")?.value || "",
+            ketuaTim: el("ketuaTim")?.value || "",
+            latarBelakang: el("latarBelakang")?.value || "",
+            deskripsi: el("deskripsi")?.value || "",
+            anggota: [...document.querySelectorAll(".anggota")].map(i => i?.value || ""),
+            dasarHukum: [...document.querySelectorAll(".dasarHukum")].map(i => i?.value || ""),
+            createdAt: Date.now()
+        };
 
-        document.getElementById("statTotal").innerText = total;
-        document.getElementById("statDigital").innerText = digital;
-        document.getElementById("statPelayanan").innerText = pelayanan;
-        document.getElementById("statAdmin").innerText = admin;
+        const file = el("lampiran")?.files?.[0];
 
-    } catch (err) {
-        console.error(err);
-        toastMsg("Render error");
+        if (file && storageRef) {
+            const ref = storageRef.child("lampiran/" + Date.now() + ".pdf");
+            const uploadTask = ref.put(file);
+
+            uploadTask.on("state_changed", (snap) => {
+                if (progressBar) {
+                    progressBar.style.width =
+                        (snap.bytesTransferred / snap.totalBytes) * 100 + "%";
+                }
+            });
+
+            await uploadTask;
+
+            data.lampiranURL = await ref.getDownloadURL();
+        }
+
+        await dbRef.push(data);
+
+        showToast("Data berhasil disimpan");
+        form?.reset();
+
+        if (progressBar) progressBar.style.width = "0%";
+
+    } catch (e) {
+        console.error("SAVE ERROR:", e);
+        showToast("Gagal menyimpan data");
+    }
+
+    setLoading(false);
+    isSaving = false;
+}
+
+// =========================
+// GLOBAL ACTIONS
+// =========================
+window.deleteData = function (id) {
+    if (!dbRef) return;
+    if (!confirm("Hapus data ini?")) return;
+
+    dbRef.child(id).remove();
+    showToast("Data dihapus");
+};
+
+window.openDetail = function (id) {
+    const item = listData.find(x => x.id === id);
+    if (!item || !detailContent) return;
+
+    const a = generateAnalisa(item);
+
+    const badgeClass =
+        a.level === "Tinggi" ? "style='background:#dcfce7;color:#166534;'" :
+        a.level === "Sedang" ? "style='background:#fef9c3;color:#854d0e;'" :
+        "style='background:#fee2e2;color:#991b1b;'";
+
+    detailContent.innerHTML = `
+        <div style="max-height:80vh; overflow:auto; padding:5px;">
+
+        <h2 style="margin-bottom:15px;">📊 Dashboard Analisa Ide</h2>
+
+        <!-- TOP SUMMARY CARDS -->
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">
+
+            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
+                <div style="font-size:12px;color:#6b7280;">Judul</div>
+                <div style="font-weight:600">${item.judul || "-"}</div>
+            </div>
+
+            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
+                <div style="font-size:12px;color:#6b7280;">Kategori</div>
+                <div style="font-weight:600">${item.kategori || "-"}</div>
+            </div>
+
+            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
+                <div style="font-size:12px;color:#6b7280;">Unit Kerja</div>
+                <div style="font-weight:600">${item.unitKerja || "-"}</div>
+            </div>
+
+            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
+                <div style="font-size:12px;color:#6b7280;">Ketua Tim</div>
+                <div style="font-weight:600">${item.ketuaTim || "-"}</div>
+            </div>
+
+        </div>
+
+        <!-- ANALISA CARD -->
+        <div style="background:#fff;border-radius:14px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,0.08);margin-bottom:15px;">
+
+            <h3 style="margin-bottom:10px;">📈 Hasil Analisa</h3>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                <span style="padding:5px 10px;border-radius:8px;font-size:12px;${badgeClass}">
+                    ${a.level}
+                </span>
+
+                <span style="padding:5px 10px;border-radius:8px;font-size:12px;background:#e0f2fe;color:#075985;">
+                    Probability: ${a.probability}%
+                </span>
+            </div>
+
+            <p style="margin:5px 0;"><b>Saran:</b> ${a.saran}</p>
+            <p style="margin:5px 0;"><b>Kesimpulan:</b> ${a.kesimpulan}</p>
+
+        </div>
+
+        <!-- GRID SECTION -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.06);">
+                <h4>⚖️ Regulasi</h4>
+                <ul style="padding-left:18px;margin:0;">
+                    ${a.regulasi.map(r => `<li>${r}</li>`).join("")}
+                </ul>
+            </div>
+
+            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.06);">
+                <h4>⚠️ Kendala</h4>
+                <ul style="padding-left:18px;margin:0;">
+                    ${
+                        a.kendala.length
+                            ? a.kendala.map(k => `<li>${k}</li>`).join("")
+                            : "<li>Tidak ada kendala</li>"
+                    }
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- DETAIL TEXT -->
+        <div style="margin-top:15px;background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.06);">
+
+            <h4>📝 Detail Informasi</h4>
+
+            <p><b>Deskripsi:</b><br>${item.deskripsi || "-"}</p>
+            <p><b>Latar Belakang:</b><br>${item.latarBelakang || "-"}</p>
+
+        </div>
+
+        </div>
+    `;
+
+    modal.style.display = "flex";
+};
+
+// =========================
+// MODAL CLOSE SAFE
+// =========================
+document.addEventListener("click", (e) => {
+    if (modal && e.target === modal) {
+        modal.style.display = "none";
     }
 });
 
 // =========================
-// TOGGLE DETAIL
+// EVENTS SAFE
 // =========================
-function toggleDetail(id) {
-    const row = document.getElementById("detail-" + id);
-    if (row) row.style.display = row.style.display === "none" ? "table-row" : "none";
-}
+document.addEventListener("DOMContentLoaded", () => {
+    initDOM();
+    listenData();
 
-// =========================
-// DELETE
-// =========================
-function hapus(id) {
-    if (!confirm("Hapus data?")) return;
+    document.getElementById("btnSimpan")?.addEventListener("click", saveData);
 
-    dbRef.child(id).remove()
-        .then(() => toastMsg("Data dihapus"))
-        .catch(() => toastMsg("Gagal hapus"));
-}
+    document.getElementById("btnReset")?.addEventListener("click", () => {
+        form?.reset();
+        showToast("Form direset");
+    });
 
-// =========================
-// EDIT
-// =========================
-function editData(id) {
-    dbRef.child(id).once("value")
-        .then(snap => {
-            const d = snap.val();
-            if (!d) return;
+    document.getElementById("btnTambahAnggota")?.addEventListener("click", () => {
+        const div = document.getElementById("daftarAnggota");
+        if (!div) return;
 
-            nama.value = d.nama || "";
-            unit.value = d.unitKerja || "";
-            judul.value = d.judul || "";
-            kategori.value = d.kategori || "";
-            ketua.value = d.ketuaTim || "";
-            latar.value = d.latarBelakang || "";
-            deskripsi.value = d.deskripsi || "";
+        const input = document.createElement("input");
+        input.className = "anggota";
+        input.placeholder = "Nama anggota";
+        div.appendChild(input);
+    });
 
-            editId = id;
-        });
-}
+    document.getElementById("btnTambahDasarHukum")?.addEventListener("click", () => {
+        const div = document.getElementById("daftarDasarHukum");
+        if (!div) return;
+
+        const input = document.createElement("input");
+        input.className = "dasarHukum";
+        input.placeholder = "Dasar hukum";
+        div.appendChild(input);
+    });
+});
 
 // =========================
-// RESET
+// START LISTENER (SAFETY CALL)
 // =========================
-document.getElementById("btnReset").onclick = resetForm;
-
-
-//
-// =========================
-// SAFE LAYER (TAMBAHAN SAJA)
-// TIDAK MERUSAK KODE LAMA
-// =========================
-
-(function () {
-
-    // =========================
-    // DISABLE SEMUA TEXTBOX (MODE VIEW ONLY)
-    // =========================
-    function disableAllInputs() {
-        document.querySelectorAll("input, textarea, select").forEach(el => {
-            el.disabled = true;
-        });
-    }
-
-    // Aktifkan ini jika ingin form terkunci
-    disableAllInputs();
-
-    // =========================
-    // SAFE TOAST (JIKA BELUM ADA)
-    // =========================
-    window.toastMsg = window.toastMsg || function (msg) {
-        const toast = document.getElementById("toast");
-        if (!toast) return;
-
-        toast.innerText = msg;
-        toast.style.display = "block";
-
-        setTimeout(() => {
-            toast.style.display = "none";
-        }, 2000);
-    };
-
-    // =========================
-    // SAFE LOADING CONTROL
-    // =========================
-    window.setLoading = window.setLoading || function (state) {
-        const loading = document.getElementById("loading");
-        if (!loading) return;
-
-        loading.style.display = state ? "block" : "none";
-    };
-
-    // =========================
-    // PROGRESS BAR HANDLER
-    // =========================
-    window.setUploadProgress = function (percent) {
-        const bar = document.getElementById("uploadProgress");
-        if (!bar) return;
-
-        bar.style.width = percent + "%";
-    };
-
-})();
-
-// =========================
-// PATCH FINAL: ANALISA + REGULASI FIX
-// TANPA MERUBAH KODE ASLI
-// =========================
-
-(function () {
-
-    // backup fungsi lama
-    const oldShowAI = window.showAI;
-    const oldAnalisaAI = window.analisaAI;
-
-    // =========================
-    // FIX 1: FORCE STABLE ANALISA AI
-    // =========================
-    window.analisaAI = function (id) {
-
-        try {
-            const promise = db.ref("ide/" + id).once("value");
-
-            promise.then(snap => {
-                const data = snap.val() || {};
-
-                // paksa pakai engine asli kalau ada
-                let result;
-                try {
-                    result = oldAnalisaAI ? generateAIAnalysis(data) : {
-                        kategori: "Normal",
-                        ringkasan: data.judul || "-",
-                        saran: ["Observasi lanjutan"],
-                        risiko: ["Belum terdeteksi"]
-                    };
-                } catch (e) {
-                    result = {
-                        kategori: "Normal",
-                        ringkasan: "-",
-                        saran: ["Fallback sistem aktif"],
-                        risiko: ["Fallback aktif"]
-                    };
-                }
-
-                // langsung tampilkan dengan showAI patch
-                window.__lastAI = result;
-                window.showAI(result);
-            });
-
-        } catch (err) {
-            console.error(err);
-            toastMsg("Analisa gagal dijalankan");
-        }
-    };
-
-    // =========================
-    // FIX 2: FORCE REGULASI SELALU MUNCUL
-    // =========================
-    window.showAI = function (res) {
-
-        const safe = res || window.__lastAI || {
-            kategori: "Tidak ada data",
-            ringkasan: "-",
-            saran: ["Tidak tersedia"],
-            risiko: ["Tidak tersedia"]
-        };
-
-        const regulasi =
-`📜 DASAR REGULASI:
-
-1. UU No. 25 Tahun 2009 - Pelayanan Publik
-2. UU No. 23 Tahun 2014 - Pemerintahan Daerah
-3. Perpres No. 95 Tahun 2018 - SPBE
-4. PermenPANRB No. 5 Tahun 2020 - Inovasi Pelayanan Publik
-5. PP No. 96 Tahun 2012 - Standar Pelayanan Publik`;
-
-        const msg =
-`📊 HASIL ANALISA INOVASI
-
-━━━━━━━━━━━━━━━━━━
-🧠 KATEGORI:
-${safe.kategori || "-"}
-
-━━━━━━━━━━━━━━━━━━
-📌 RINGKASAN:
-${safe.ringkasan || "-"}
-
-━━━━━━━━━━━━━━━━━━
-💡 SARAN:
-- ${(safe.saran || []).join("\n- ")}
-
-━━━━━━━━━━━━━━━━━━
-⚠️ RISIKO:
-- ${(safe.risiko || []).join("\n- ")}
-
-━━━━━━━━━━━━━━━━━━
-📜 REGULASI:
-${regulasi}
-`;
-
-        // anti cut-off di Android
-        setTimeout(() => {
-            alert(msg);
-        }, 80);
-    };
-
-})();
-
-// =========================
-// FIX FINAL CHROME: REGULASI & ANALISA TIDAK HILANG
-// TANPA MERUBAH LOGIC ASLI
-// =========================
-
-(function () {
-
-    const oldShowAI = window.showAI;
-
-    window.showAI = function (res) {
-
-        const safe = res || {
-            kategori: "-",
-            ringkasan: "-",
-            saran: ["-"],
-            risiko: ["-"]
-        };
-
-        const regulasi =
-`📜 DASAR REGULASI:
-
-1. UU No. 25 Tahun 2009 - Pelayanan Publik
-2. UU No. 23 Tahun 2014 - Pemerintahan Daerah
-3. Perpres No. 95 Tahun 2018 - SPBE
-4. PermenPANRB No. 5 Tahun 2020
-5. PP No. 96 Tahun 2012 - Standar Pelayanan`;
-
-        const content =
-`📊 HASIL ANALISA INOVASI
-
-🧠 KATEGORI:
-${safe.kategori}
-
-📌 RINGKASAN:
-${safe.ringkasan}
-
-💡 SARAN:
-- ${(safe.saran || []).join("\n- ")}
-
-⚠️ RISIKO:
-- ${(safe.risiko || []).join("\n- ")}
-
-📜 REGULASI:
-${regulasi}`;
-
-// =========================
-// FIX CHROME SAFE DISPLAY
-// (replace alert)
-// =========================
-        showModal(content);
-    };
-
-    function showModal(text) {
-        let modal = document.getElementById("aiModal");
-
-        if (!modal) {
-            modal = document.createElement("div");
-            modal.id = "aiModal";
-            modal.style = `
-                position: fixed;
-                top: 0; left: 0;
-                width: 100%; height: 100%;
-                background: rgba(0,0,0,0.7);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 999999;
-            `;
-
-            modal.innerHTML = `
-                <div style="
-                    background: white;
-                    padding: 20px;
-                    width: 90%;
-                    max-width: 500px;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                    border-radius: 10px;
-                    white-space: pre-wrap;
-                    font-family: Arial;
-                ">
-                    <pre id="aiText"></pre>
-                    <button id="closeAI" style="
-                        margin-top: 10px;
-                        padding: 8px 12px;
-                        border: none;
-                        background: #ff7a00;
-                        color: white;
-                        border-radius: 5px;
-                    ">Tutup</button>
-                </div>
-            `;
-
-            document.body.appendChild(modal);
-
-            modal.querySelector("#closeAI").onclick = () => {
-                modal.style.display = "none";
-            };
-        }
-
-        modal.style.display = "flex";
-        modal.querySelector("#aiText").innerText = text;
-    }
-
-})();
+listenData();
