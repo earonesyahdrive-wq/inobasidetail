@@ -90,6 +90,52 @@ body {
     font-size: 11px;
 }
 
+.hero {
+    text-align: center;
+    padding: 20px 10px; /* lebih kecil dari sebelumnya */
+    color: #000; /* semua teks hitam */
+}
+
+.hero h1 {
+    font-size: 22px; /* lebih kecil */
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+.hero p {
+    font-size: 13px;
+    color: #000;
+    opacity: 0.8;
+    margin-bottom: 15px;
+}
+
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.hero-stats div {
+    padding: 8px;
+    border-radius: 10px;
+    background: #f5f5f5;
+    color: #000;
+}
+
+.hero-stats h2 {
+    font-size: 16px;
+    margin: 0;
+    color: #000;
+}
+
+.hero-stats span {
+    font-size: 11px;
+    color: #000;
+    opacity: 0.7;
+}
+
 /* =========================
    CARD SYSTEM
 ========================= */
@@ -352,4 +398,4 @@ img, table {
         font-size: 10px;
         padding: 5px 8px;
     }
-}
+   }
