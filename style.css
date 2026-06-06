@@ -1,307 +1,84 @@
+/* =========================
+   ROOT THEME (ORANGE - YELLOW)
+========================= */
 :root {
-    --primary: #ff8c42;       /* orange muda */
-    --secondary: #ffd166;     /* kuning muda */
-    --accent: #ffb703;        /* kuning kuat */
-    --bg: #fff8ef;            /* background creamy */
+    --primary: #ff8c42;
+    --secondary: #ffd166;
+    --accent: #ffb703;
+
+    --bg: #fff8ef;
     --card: #ffffff;
-    --text: #2b2b2b;
-    --muted: #7a7a7a;
-    --border: #f1e3d3;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #f3e5d8;
+
     --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   GLOBAL RESET (STABLE)
+========================= */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, var(--bg), #fffdf7);
+    background: var(--bg);
     color: var(--text);
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* CONTAINER */
+/* =========================
+   CONTAINER
+========================= */
 .container {
     max-width: 1150px;
     margin: auto;
     padding: 20px;
 }
 
-/* HERO */
+/* =========================
+   HERO
+========================= */
 .hero {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
-    padding: 35px;
-    border-radius: 18px;
-    box-shadow: var(--shadow);
-}
-
-.hero h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.hero p {
-    opacity: 0.9;
-}
-
-/* STAT */
-.hero-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.stat-card {
-    background: rgba(255,255,255,0.9);
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 5px 12px rgba(0,0,0,0.05);
-}
-
-.stat-card h2 {
-    margin: 0;
-    color: var(--primary);
-}
-
-/* CARD */
-.card {
-    background: var(--card);
-    margin-top: 20px;
-    padding: 22px;
-    border-radius: 18px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-}
-
-.card-title {
-    margin-top: 0;
-    font-size: 20px;
-}
-
-/* FORM */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-}
-
-label {
-    font-size: 13px;
-    color: var(--muted);
-}
-
-input, select, textarea {
-    width: 100%;
-    padding: 11px;
-    margin: 6px 0 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    outline: none;
-    transition: 0.2s;
-    background: #fff;
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(255,140,66,0.15);
-}
-
-/* BUTTON */
-button {
-    border: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
-    font-weight: 500;
-}
-
-.btn-save {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
-}
-
-.btn-save:hover {
-    transform: translateY(-2px);
-}
-
-.btn-edit {
-    background: var(--secondary);
-    color: #333;
-}
-
-.btn-success {
-    background: #fff1d6;
-    border: 1px solid var(--secondary);
-    color: #333;
-}
-
-/* TABLE */
-.table-responsive {
-    overflow-x: auto;
-}
-
-/* =========================
-   TABLE FONT SMALLER (-1pt)
-========================= */
-table {
-    font-size: 11px; /* turun dari default 12px */
-}
-
-table th {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 8px;
-}
-
-table td {
-    font-size: 11px;
-    padding: 8px;
-}
-
-/* optional: biar lebih rapi */
-table {
-    border-collapse: collapse;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-th {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 12px;
-}
-
-td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border);
-}
-
-tr:hover {
-    background: #fff3e6;
-}
-
-/* INPUT SEARCH */
-#cari {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    margin-bottom: 10px;
-}
-
-/* LOADING */
-.loading {
-    display: none;
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    background: var(--primary);
-    color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-}
-
-/* TOAST */
-.toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #333;
-    color: white;
-    padding: 12px 16px;
-    border-radius: 12px;
-    opacity: 0;
-    transition: 0.3s;
-}
-
-.toast.show {
-    opacity: 1;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .hero-stats {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-table button {
-    background: #ff8c42;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-}
-
-table button:hover {
-    opacity: 0.85;
-}
-
-.btn-analisa {
-    background: #ffb703;
-    color: black;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 5px;
-}
-
-.btn-analisa:hover {
-    background: #ffa000;
-}
-
-/* =========================
-   HERO COMPACT (FIX)
-========================= */
-.hero {
-    text-align: center;
-    padding: 18px 14px;   /* sebelumnya besar, sekarang diperkecil */
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, #ff8c42, #ffb703);
+    padding: 20px;
     border-radius: 14px;
-    color: white;
+    text-align: center;
+    box-shadow: var(--shadow);
 }
 
-/* Judul */
 .hero h1 {
-    font-size: 20px;      /* diperkecil dari default besar */
-    margin: 0 0 6px 0;
-    font-weight: 700;
+    margin: 0;
+    font-size: 22px;
 }
 
-/* Subjudul */
 .hero p {
     font-size: 13px;
-    margin: 0;
     opacity: 0.9;
 }
 
-/* =========================
-   STAT BOX COMPACT
-========================= */
+/* HERO STATS */
 .hero-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    gap: 10px;
     margin-top: 12px;
 }
 
 .hero-stats div {
     background: rgba(255,255,255,0.15);
-    padding: 8px;
+    padding: 10px;
     border-radius: 10px;
-    backdrop-filter: blur(6px);
 }
 
 .hero-stats h2 {
@@ -311,22 +88,268 @@ table button:hover {
 
 .hero-stats span {
     font-size: 11px;
-    opacity: 0.9;
 }
 
 /* =========================
-   RESPONSIVE HERO
+   CARD SYSTEM
+========================= */
+.card {
+    background: var(--card);
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+/* =========================
+   FORM SYSTEM
+========================= */
+label {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    background: #fff;
+    transition: 0.2s ease;
+    font-size: 16px; /* FIX MOBILE ZOOM */
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255,140,66,0.15);
+}
+
+/* =========================
+   BUTTON SYSTEM (PROFESSIONAL)
+========================= */
+button {
+    border: none;
+    padding: 9px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* PRIMARY BUTTON */
+.btn-save {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+}
+
+/* SECONDARY */
+.btn-edit {
+    background: #f3f4f6;
+    color: #333;
+}
+
+/* =========================
+   TABLE WRAPPER
+========================= */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* =========================
+   TABLE DESIGN (PROFESSIONAL)
+========================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    font-size: 12px;
+    min-width: 650px;
+}
+
+table thead {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+table th {
+    padding: 12px;
+    text-align: left;
+}
+
+table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1e7dc;
+    color: #374151;
+}
+
+table tbody tr:hover {
+    background: #fff3e6;
+}
+
+table tbody tr:nth-child(even) {
+    background: #fffaf3;
+}
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+.aksi-btn {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: white;
+}
+
+.btn-detail { background: #ff8c42; }
+.btn-analisa { background: #ffb703; color: #111; }
+.btn-hapus { background: #ef4444; }
+
+/* =========================
+   PROGRESS BAR
+========================= */
+.progress {
+    width: 100%;
+    height: 8px;
+    background: #f3e5d8;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: 0.3s ease;
+}
+
+/* =========================
+   LOADING
+========================= */
+.loading {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: var(--primary);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    display: none;
+    z-index: 9999;
+}
+
+/* =========================
+   TOAST
+========================= */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #111827;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.25s ease;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* =========================
+   MODAL (STABLE + MODERN)
+========================= */
+#modalDetail {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 9999;
+    backdrop-filter: blur(3px);
+}
+
+#modalDetail > div {
+    width: 100%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: auto;
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    animation: modalFade 0.15s ease;
+}
+
+@keyframes modalFade {
+    from { transform: scale(0.98); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* =========================
+   IMAGE / TABLE SAFETY
+========================= */
+img, table {
+    max-width: 100%;
+}
+
+/* =========================
+   RESPONSIVE
 ========================= */
 @media (max-width: 768px) {
-    .hero {
-        padding: 14px;
-    }
-
-    .hero h1 {
-        font-size: 18px;
-    }
 
     .hero-stats {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    table {
+        min-width: 100%;
+        font-size: 11px;
+    }
+
+    table th, table td {
+        padding: 8px;
+    }
+
+    .aksi-btn {
+        justify-content: flex-end;
+    }
+
+    button {
+        font-size: 10px;
+        padding: 5px 8px;
     }
 }
