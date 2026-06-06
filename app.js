@@ -76,21 +76,81 @@ function setLoading(state) {
     loading.style.display = state ? "block" : "none";
 }
 
+
+// =========================
+// AI SMART SCORING ENGINE (REAL-TIME)
+// =========================
+
+function aiSmartScore(item = {}) {
+    let score = 0;
+
+    const kategori = item.kategori || "";
+    const deskripsi = item.deskripsi || "";
+    const latar = item.latarBelakang || "";
+    const anggota = item.anggota || [];
+
+    // =========================
+    // BASE INTELLIGENCE SCORING
+    // =========================
+    const kategoriWeight = {
+        "Digitalisasi": 35,
+        "Pelayanan": 30,
+        "Pengawasan": 40,
+        "Administrasi": 20
+    };
+
+    score += kategoriWeight[kategori] || 10;
+
+    // =========================
+    // QUALITY SIGNAL
+    // =========================
+    if (deskripsi.length > 150) score += 20;
+    else if (deskripsi.length > 80) score += 10;
+
+    if (latar.length > 150) score += 20;
+    else if (latar.length > 80) score += 10;
+
+    if (anggota.length >= 4) score += 15;
+    else if (anggota.length >= 2) score += 8;
+
+    // =========================
+    // DPMPTSP REAL-WORLD FACTOR
+    // =========================
+
+    // OSS readiness
+    const ossFactor =
+        kategori === "Pelayanan" ? 15 :
+        kategori === "Digitalisasi" ? 20 :
+        kategori === "Administrasi" ? 5 : 10;
+
+    score += ossFactor;
+
+    // Complexity penalty
+    const complexityPenalty =
+        kategori === "Administrasi" ? -10 :
+        kategori === "Pengawasan" ? -5 : 0;
+
+    score += complexityPenalty;
+
+    // =========================
+    // FINAL NORMALIZATION
+    // =========================
+    const probability = Math.min(95, Math.max(5, score + 12));
+
+    return {
+        score,
+        probability
+    };
+}
 // =========================
 // ANALISA ENGINE (NO CHANGE)
 // =========================
 function generateAnalisa(item = {}) {
 
-    let score = 0;
+    const ai = aiSmartScore(item);
+let score = ai.score;
 
-    if (item.kategori === "Digitalisasi") score += 30;
-    if (item.kategori === "Pelayanan") score += 25;
-    if (item.kategori === "Administrasi") score += 20;
-    if (item.kategori === "Pengawasan") score += 35;
 
-    if ((item.deskripsi || "").length > 100) score += 15;
-    if ((item.latarBelakang || "").length > 100) score += 15;
-    if (Array.isArray(item.anggota) && item.anggota.length > 2) score += 10;
 
     const probability = Math.min(95, score + 10);
 
@@ -99,6 +159,12 @@ function generateAnalisa(item = {}) {
     else if (probability >= 40) level = "Sedang";
 
     return {
+    	aiInsight:
+    probability >= 80
+        ? "AI: Sangat siap diproses OSS-RBA (low friction approval)"
+        : probability >= 50
+            ? "AI: Perlu verifikasi tambahan DPMPTSP"
+            : "AI: Risiko tinggi, butuh revisi data & dokumen",
         level,
         probability,
         saran:
@@ -196,10 +262,16 @@ function listenData() {
 
             listData = (!data || typeof data !== "object")
                 ? []
-                : Object.entries(data).map(([id, val]) => ({
-                    id,
-                    ...(val || {})
-                }));
+                : Object.entries(data).map(([id, val]) => {
+                    const item = { id, ...(val || {}) };
+
+                    // AI REAL-TIME SCORING
+                    const ai = aiSmartScore(item);
+                    item.aiProbability = ai.probability;
+                    item.aiScore = ai.score;
+
+                    return item;
+                });
 
             renderTable();
             renderStats();
