@@ -1,538 +1,377 @@
-// =========================
-// GLOBAL STATE SAFE
-// =========================
-let listData = [];
-let isSaving = false;
-let firebaseListener = null;
-
-// =========================
+// =====================================
 // FIREBASE SAFE INIT
-// =========================
-let dbRef = null;
-let storageRef = null;
+// =====================================
 
-try {
-    if (typeof db !== "undefined" && db && typeof db.ref === "function") {
-        dbRef = db.ref("ide");
+(function initFirebaseSafe() {
+
+    if (!window.firebase) {
+        alert("Firebase tidak ditemukan");
+        throw new Error("Firebase tidak loaded");
     }
 
-    if (
-        typeof firebase !== "undefined" &&
-        firebase.storage &&
-        typeof firebase.storage === "function"
-    ) {
-        storageRef = firebase.storage().ref();
-    }
-} catch (e) {
-    console.error("Firebase init error:", e);
-}
-
-// =========================
-// SAFE DOM HELPER
-// =========================
-const el = (id) => document.getElementById(id);
-
-// =========================
-// DOM CACHE (ANTI NULL CRASH)
-// =========================
-let form, tbody, toast, loading, modal, detailContent;
-let statTotal, statDigital, statPelayanan, statAdmin;
-let progressBar;
-
-// =========================
-// INIT DOM
-// =========================
-function initDOM() {
-    form = el("formIde");
-    tbody = el("tbodyIde");
-    toast = el("toast");
-    loading = el("loading");
-    modal = el("modalDetail");
-    detailContent = el("detailContent");
-
-    statTotal = el("statTotal");
-    statDigital = el("statDigital");
-    statPelayanan = el("statPelayanan");
-    statAdmin = el("statAdmin");
-
-    progressBar = el("uploadProgress");
-}
-
-// =========================
-// UI HELPERS
-// =========================
-function showToast(msg) {
-    if (!toast) return;
-    toast.innerText = msg;
-    toast.style.display = "block";
-
-    setTimeout(() => {
-        if (toast) toast.style.display = "none";
-    }, 2000);
-}
-
-function setLoading(state) {
-    if (!loading) return;
-    loading.style.display = state ? "block" : "none";
-}
-
-
-// =========================
-// AI SMART SCORING ENGINE (REAL-TIME)
-// =========================
-
-function aiSmartScore(item = {}) {
-    let score = 0;
-
-    const kategori = item.kategori || "";
-    const deskripsi = item.deskripsi || "";
-    const latar = item.latarBelakang || "";
-    const anggota = item.anggota || [];
-
-    // =========================
-    // BASE INTELLIGENCE SCORING
-    // =========================
-    const kategoriWeight = {
-        "Digitalisasi": 35,
-        "Pelayanan": 30,
-        "Pengawasan": 40,
-        "Administrasi": 20
+    const firebaseConfig = {
+        apiKey: "AIzaSyAV4elg7kaRtL7MTXtrb9oWOOuF2e5qlJ4",
+        authDomain: "inovasi123-e8266.firebaseapp.com",
+        databaseURL: "https://inovasi123-e8266-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "inovasi123-e8266",
+        storageBucket: "inovasi123-e8266.firebasestorage.app",
+        messagingSenderId: "881339507290",
+        appId: "1:881339507290:web:867805e92aeb40f0742e63"
     };
 
-    score += kategoriWeight[kategori] || 10;
-
-    // =========================
-    // QUALITY SIGNAL
-    // =========================
-    if (deskripsi.length > 150) score += 20;
-    else if (deskripsi.length > 80) score += 10;
-
-    if (latar.length > 150) score += 20;
-    else if (latar.length > 80) score += 10;
-
-    if (anggota.length >= 4) score += 15;
-    else if (anggota.length >= 2) score += 8;
-
-    // =========================
-    // DPMPTSP REAL-WORLD FACTOR
-    // =========================
-
-    // OSS readiness
-    const ossFactor =
-        kategori === "Pelayanan" ? 15 :
-        kategori === "Digitalisasi" ? 20 :
-        kategori === "Administrasi" ? 5 : 10;
-
-    score += ossFactor;
-
-    // Complexity penalty
-    const complexityPenalty =
-        kategori === "Administrasi" ? -10 :
-        kategori === "Pengawasan" ? -5 : 0;
-
-    score += complexityPenalty;
-
-    // =========================
-    // FINAL NORMALIZATION
-    // =========================
-    const probability = Math.min(95, Math.max(5, score + 12));
-
-    return {
-        score,
-        probability
-    };
-}
-// =========================
-// ANALISA ENGINE (NO CHANGE)
-// =========================
-function generateAnalisa(item = {}) {
-
-    const ai = aiSmartScore(item);
-let score = ai.score;
-
-
-
-    const probability = Math.min(95, score + 10);
-
-    let level = "Rendah";
-    if (probability >= 70) level = "Tinggi";
-    else if (probability >= 40) level = "Sedang";
-
-function buildKesimpulan(item, level, probability) {
-    const bagian = [];
-
-    // 1. Judul & konteks
-    if (item.judul) {
-        bagian.push(`Inovasi "${item.judul}" memiliki fokus pada ${item.kategori || "bidang terkait"}.`);
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
     }
 
-    // 2. Kualitas deskripsi
-    if (item.deskripsi && item.deskripsi.length > 120) {
-        bagian.push("Deskripsi sudah cukup lengkap dan mendukung implementasi.");
-    } else {
-        bagian.push("Deskripsi masih perlu diperjelas untuk meningkatkan pemahaman.");
-    }
+})();
 
-    // 3. Tim
-    const jumlahTim = item.anggota ? item.anggota.length : 0;
+const db = firebase.database();
 
-    if (jumlahTim >= 4) {
-        bagian.push("Komposisi tim tergolong kuat dan kolaboratif.");
-    } else if (jumlahTim >= 2) {
-        bagian.push("Tim cukup, namun masih bisa diperluas untuk efektivitas.");
-    } else {
-        bagian.push("Tim masih kurang memadai untuk implementasi optimal.");
-    }
+const pegawaiRef = db.ref("pegawai");
+const inovasiRef = db.ref("inovasi");
 
-    // 4. Level keputusan
-    if (level === "Tinggi") {
-        bagian.push("Secara keseluruhan, inovasi ini sangat layak untuk segera diimplementasikan.");
-    } else if (level === "Sedang") {
-        bagian.push("Inovasi ini potensial namun masih memerlukan penguatan konsep.");
-    } else {
-        bagian.push("Inovasi ini masih membutuhkan revisi signifikan sebelum dapat diterapkan.");
-    }
+// =====================================
+// STATE GLOBAL
+// =====================================
 
-    // 5. Probabilitas
-    bagian.push(`Tingkat kelayakan diperkirakan sekitar ${probability}%.`);
+let allData = [];
 
-    return bagian.join(" ");
+const output = document.getElementById("output");
+
+// =====================================
+// LOADING
+// =====================================
+
+function showLoading() {
+    const el = document.getElementById("loadingModal");
+    if (el) el.style.display = "flex";
 }
 
-    return {
-    	aiInsight:
-    probability >= 80
-        ? "AI: Sangat siap diproses OSS-RBA (low friction approval)"
-        : probability >= 50
-            ? "AI: Perlu verifikasi tambahan DPMPTSP"
-            : "AI: Risiko tinggi, butuh revisi data & dokumen",
-        level,
-        probability,
-        saran:
-            level === "Tinggi"
-                ? "Layak implementasi cepat (pilot project)."
-                : level === "Sedang"
-                    ? "Perlu penguatan konsep & uji coba."
-                    : "Perlu revisi mendalam sebelum implementasi.",
-
-        regulasi: [
-            "UU No. 25 Tahun 2009",
-            "UU No. 30 Tahun 2014",
-            "Perpres No. 95 Tahun 2018",
-            "Permen PANRB Inovasi Pelayanan Publik"
-        ],
-
-        kendala: [
-            (!item.anggota || item.anggota.length < 2) && "Tim kurang solid",
-            (!item.deskripsi || item.deskripsi.length < 50) && "Deskripsi kurang detail",
-            item.kategori === "Administrasi" && "Potensi hambatan birokrasi"
-        ].filter(Boolean),
-
-        produkHukum: [
-            "SOP",
-            "Keputusan Pimpinan",
-            "Peraturan Internal",
-            "Pedoman Teknis"
-        ],
-
-        kesimpulan: buildKesimpulan(item, level, probability)
-    };
+function hideLoading() {
+    const el = document.getElementById("loadingModal");
+    if (el) el.style.display = "none";
 }
 
-// =========================
-// RENDER TABLE
-// =========================
-function renderTable() {
-    if (!tbody) return;
+// =====================================
+// TOAST
+// =====================================
 
-    tbody.innerHTML = "";
+function toast(msg) {
 
-    listData.forEach((item) => {
-        const a = generateAnalisa(item);
+    const el = document.getElementById("toast");
 
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${item.judul ?? "-"}</td>
-            <td>${item.unitKerja ?? "-"}</td>
-            <td>${item.kategori ?? "-"}</td>
-            <td>${a.level} (${a.probability}%)</td>
-            <td>
-                <button onclick="openDetail('${item.id}')">Detail</button>
-                <button onclick="deleteData('${item.id}')">Hapus</button>
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-}
-
-// =========================
-// STATS
-// =========================
-function renderStats() {
-    const count = (k) => listData.filter(x => x.kategori === k).length;
-
-    if (statTotal) statTotal.innerText = listData.length;
-    if (statDigital) statDigital.innerText = count("Digitalisasi");
-    if (statPelayanan) statPelayanan.innerText = count("Pelayanan");
-    if (statAdmin) statAdmin.innerText = count("Administrasi");
-}
-
-// =========================
-// FIREBASE LISTENER SAFE
-// =========================
-function listenData() {
-    if (!dbRef) {
-        console.error("Firebase DB tidak tersedia");
+    if (!el) {
+        alert(msg);
         return;
     }
 
-    try {
-        if (firebaseListener && dbRef.off) {
-            dbRef.off("value", firebaseListener);
-        }
+    el.innerText = msg;
+    el.classList.add("show");
 
-        firebaseListener = (snap) => {
-            const data = snap.val();
-
-            listData = (!data || typeof data !== "object")
-                ? []
-                : Object.entries(data).map(([id, val]) => {
-                    const item = { id, ...(val || {}) };
-
-                    // AI REAL-TIME SCORING
-                    const ai = aiSmartScore(item);
-                    item.aiProbability = ai.probability;
-                    item.aiScore = ai.score;
-
-                    return item;
-                });
-
-            renderTable();
-            renderStats();
-        };
-
-        dbRef.on("value", firebaseListener);
-
-    } catch (e) {
-        console.error("Listener error:", e);
-    }
+    setTimeout(() => {
+        el.classList.remove("show");
+    }, 2500);
 }
 
-// =========================
-// SAVE DATA SAFE
-// =========================
-async function saveData() {
-    if (!dbRef || isSaving) return;
+// =====================================
+// PROBABILITAS OTOMATIS
+// =====================================
 
-    isSaving = true;
-    setLoading(true);
+function hitungProbabilitas(data) {
+
+    let skor = 0;
+
+    if (data.judul) skor += 15;
+    if (data.kategori) skor += 15;
+
+    if ((data.dasarHukum || "").length > 20) skor += 20;
+    if ((data.latarBelakang || "").length > 50) skor += 20;
+    if ((data.deskripsi || "").length > 100) skor += 20;
+    if ((data.tujuan || "").length > 30) skor += 10;
+
+    return Math.min(skor, 100);
+}
+
+// =====================================
+// ANALISA (FALLBACK / OFFLINE)
+// =====================================
+
+function analisaOffline(data) {
+
+    let saran = [];
+    let kendala = [];
+    let dasarHukum = [];
+
+    // dasar hukum otomatis
+    dasarHukum.push("UU No. 25 Tahun 2009 tentang Pelayanan Publik");
+    dasarHukum.push("UU No. 23 Tahun 2014 tentang Pemerintahan Daerah");
+    dasarHukum.push("Perpres SPBE No. 95 Tahun 2018");
+
+    if ((data.kategori || "").toLowerCase().includes("pelayanan")) {
+        dasarHukum.push("UU Cipta Kerja (OSS Perizinan Berusaha)");
+    }
+
+    // saran
+    if ((data.deskripsi || "").length < 100) {
+        saran.push("Deskripsi masih terlalu singkat");
+    }
+
+    if ((data.tujuan || "").length < 30) {
+        saran.push("Tujuan belum spesifik");
+    }
+
+    // kendala
+    if ((data.latarBelakang || "").length < 50) {
+        kendala.push("Latar belakang kurang kuat");
+    }
+
+    if (!data.dasarHukum) {
+        kendala.push("Belum ada dasar hukum input user");
+    }
+
+    if (kendala.length === 0) {
+        kendala.push("Tidak ditemukan kendala besar");
+    }
+
+    // kesimpulan
+    let kesimpulan =
+        data.probabilitas >= 80
+            ? "Sangat layak diimplementasikan"
+            : data.probabilitas >= 60
+                ? "Layak dengan perbaikan"
+                : "Perlu revisi besar";
+
+    return { saran, kendala, dasarHukum, kesimpulan };
+}
+
+// =====================================
+// LOAD DATA
+// =====================================
+
+async function loadData() {
 
     try {
-        const data = {
-            nama: el("nama")?.value || "",
-            unitKerja: el("unitKerja")?.value || "",
-            judul: el("judul")?.value || "",
-            kategori: el("kategori")?.value || "",
-            ketuaTim: el("ketuaTim")?.value || "",
-            latarBelakang: el("latarBelakang")?.value || "",
-            deskripsi: el("deskripsi")?.value || "",
-            anggota: [...document.querySelectorAll(".anggota")].map(i => i?.value || ""),
-            dasarHukum: [...document.querySelectorAll(".dasarHukum")].map(i => i?.value || ""),
-            createdAt: Date.now()
-        };
 
-        const file = el("lampiran")?.files?.[0];
+        showLoading();
 
-        if (file && storageRef) {
-            const ref = storageRef.child("lampiran/" + Date.now() + ".pdf");
-            const uploadTask = ref.put(file);
+        const pegawaiSnap = await pegawaiRef.once("value");
+        const inovasiSnap = await inovasiRef.once("value");
 
-            uploadTask.on("state_changed", (snap) => {
-                if (progressBar) {
-                    progressBar.style.width =
-                        (snap.bytesTransferred / snap.totalBytes) * 100 + "%";
-                }
+        const pegawai = pegawaiSnap.val() || {};
+        const inovasi = inovasiSnap.val() || {};
+
+        allData = [];
+
+        Object.keys(inovasi).forEach(id => {
+
+            const inv = inovasi[id];
+            const p = pegawai[inv.nip] || {};
+
+            allData.push({
+                id,
+                nip: inv.nip,
+                nama: p.nama || "-",
+                jabatan: p.jabatan || "-",
+                tempatTugas: p.tempatTugas || "-",
+                judul: inv.judul || "-",
+                kategori: inv.kategori || "-",
+                dasarHukum: inv.dasarHukum || "",
+                latarBelakang: inv.latarBelakang || "",
+                deskripsi: inv.deskripsi || "",
+                tujuan: inv.tujuan || "",
+                status: inv.status || "diajukan",
+                createdAt: inv.createdAt || 0,
+                probabilitas: hitungProbabilitas(inv)
             });
 
-            await uploadTask;
+        });
 
-            data.lampiranURL = await ref.getDownloadURL();
-        }
+        allData.sort((a, b) => b.createdAt - a.createdAt);
 
-        await dbRef.push(data);
+        updateDashboard();
+        renderTable(allData);
 
-        showToast("Data berhasil disimpan");
-        form?.reset();
+    } catch (err) {
 
-        if (progressBar) progressBar.style.width = "0%";
+        console.error(err);
+        toast("Gagal load data");
 
-    } catch (e) {
-        console.error("SAVE ERROR:", e);
-        showToast("Gagal menyimpan data");
+    } finally {
+        hideLoading();
     }
-
-    setLoading(false);
-    isSaving = false;
 }
 
-// =========================
-// GLOBAL ACTIONS
-// =========================
-window.deleteData = function (id) {
-    if (!dbRef) return;
-    if (!confirm("Hapus data ini?")) return;
+// =====================================
+// DASHBOARD
+// =====================================
 
-    dbRef.child(id).remove();
-    showToast("Data dihapus");
-};
+function updateDashboard() {
 
-window.openDetail = function (id) {
-    const item = listData.find(x => x.id === id);
-    if (!item || !detailContent) return;
+    document.getElementById("totalInovasi").innerText = allData.length;
+    document.getElementById("totalDiajukan").innerText =
+        allData.filter(x => x.status === "diajukan").length;
 
-    const a = generateAnalisa(item);
+    document.getElementById("totalDisetujui").innerText =
+        allData.filter(x => x.status === "disetujui").length;
 
-    const badgeClass =
-        a.level === "Tinggi" ? "style='background:#dcfce7;color:#166534;'" :
-        a.level === "Sedang" ? "style='background:#fef9c3;color:#854d0e;'" :
-        "style='background:#fee2e2;color:#991b1b;'";
+    document.getElementById("totalDitolak").innerText =
+        allData.filter(x => x.status === "ditolak").length;
+}
 
-    detailContent.innerHTML = `
-        <div style="max-height:80vh; overflow:auto; padding:5px;">
+// =====================================
+// RENDER TABLE
+// =====================================
 
-        <h2 style="margin-bottom:15px;">📊 Dashboard Analisa Ide</h2>
+function renderTable(data) {
 
-        <!-- TOP SUMMARY CARDS -->
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px;">
+    output.innerHTML = "";
 
-            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
-                <div style="font-size:12px;color:#6b7280;">Judul</div>
-                <div style="font-weight:600">${item.judul || "-"}</div>
-            </div>
+    if (!data.length) {
+        output.innerHTML = `
+        <tr>
+            <td colspan="7" align="center">Data kosong</td>
+        </tr>`;
+        return;
+    }
 
-            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
-                <div style="font-size:12px;color:#6b7280;">Kategori</div>
-                <div style="font-weight:600">${item.kategori || "-"}</div>
-            </div>
+    data.forEach(item => {
 
-            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
-                <div style="font-size:12px;color:#6b7280;">Unit Kerja</div>
-                <div style="font-weight:600">${item.unitKerja || "-"}</div>
-            </div>
+        output.innerHTML += `
+        <tr>
+            <td>${item.nip}</td>
+            <td>${item.nama}</td>
+            <td>${item.judul}</td>
+            <td>${item.kategori}</td>
+            <td>${item.probabilitas}%</td>
+            <td>${item.status}</td>
+            <td>
+                <button onclick="detail('${item.id}')">Detail</button>
+                <button onclick="approve('${item.id}')">âœ”</button>
+                <button onclick="reject('${item.id}')">âœ–</button>
+                <button onclick="hapus('${item.id}')">Hapus</button>
+            </td>
+        </tr>`;
+    });
+}
 
-            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.08);">
-                <div style="font-size:12px;color:#6b7280;">Ketua Tim</div>
-                <div style="font-weight:600">${item.ketuaTim || "-"}</div>
-            </div>
+// =====================================
+// DETAIL POPUP (ANALISA REALTIME)
+// =====================================
 
-        </div>
+function detail(id) {
 
-        <!-- ANALISA CARD -->
-        <div style="background:#fff;border-radius:14px;padding:15px;box-shadow:0 8px 20px rgba(0,0,0,0.08);margin-bottom:15px;">
+    const data = allData.find(x => x.id === id);
+    if (!data) return;
 
-            <h3 style="margin-bottom:10px;">📈 Hasil Analisa</h3>
+    const hasil = analisaOffline(data);
 
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-                <span style="padding:5px 10px;border-radius:8px;font-size:12px;${badgeClass}">
-                    ${a.level}
-                </span>
+    document.getElementById("detailBody").innerHTML = `
 
-                <span style="padding:5px 10px;border-radius:8px;font-size:12px;background:#e0f2fe;color:#075985;">
-                    Probability: ${a.probability}%
-                </span>
-            </div>
+        <h3>DATA PEGAWAI</h3>
+        <p>NIP: ${data.nip}</p>
+        <p>Nama: ${data.nama}</p>
+        <p>Jabatan: ${data.jabatan}</p>
 
-            <p style="margin:5px 0;"><b>Saran:</b> ${a.saran}</p>
-            <p style="margin:5px 0;"><b>Kesimpulan:</b> ${a.kesimpulan}</p>
+        <hr>
 
-        </div>
+        <h3>INOVASI</h3>
+        <p>Judul: ${data.judul}</p>
+        <p>Kategori: ${data.kategori}</p>
 
-        <!-- GRID SECTION -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <hr>
 
-            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.06);">
-                <h4>⚖️ Regulasi</h4>
-                <ul style="padding-left:18px;margin:0;">
-                    ${a.regulasi.map(r => `<li>${r}</li>`).join("")}
-                </ul>
-            </div>
+        <h3>PROBABILITAS: ${data.probabilitas}%</h3>
 
-            <div style="background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.06);">
-                <h4>⚠️ Kendala</h4>
-                <ul style="padding-left:18px;margin:0;">
-                    ${
-                        a.kendala.length
-                            ? a.kendala.map(k => `<li>${k}</li>`).join("")
-                            : "<li>Tidak ada kendala</li>"
-                    }
-                </ul>
-            </div>
+        <hr>
 
-        </div>
+        <h3>ðŸ“Œ SARAN</h3>
+        <ul>${hasil.saran.map(x => `<li>${x}</li>`).join("")}</ul>
 
-        <!-- DETAIL TEXT -->
-        <div style="margin-top:15px;background:#fff;padding:12px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,0.06);">
+        <h3>âš  KENDALA</h3>
+        <ul>${hasil.kendala.map(x => `<li>${x}</li>`).join("")}</ul>
 
-            <h4>📝 Detail Informasi</h4>
+        <h3>ðŸ“š DASAR HUKUM</h3>
+        <ul>${hasil.dasarHukum.map(x => `<li>${x}</li>`).join("")}</ul>
 
-            <p><b>Deskripsi:</b><br>${item.deskripsi || "-"}</p>
-            <p><b>Latar Belakang:</b><br>${item.latarBelakang || "-"}</p>
+        <h3>ðŸ§¾ KESIMPULAN</h3>
+        <p>${hasil.kesimpulan}</p>
 
-        </div>
-
-        </div>
     `;
 
-    modal.style.display = "flex";
-};
+    document.getElementById("detailModal").style.display = "flex";
+}
 
-// =========================
-// MODAL CLOSE SAFE
-// =========================
-document.addEventListener("click", (e) => {
-    if (modal && e.target === modal) {
-        modal.style.display = "none";
-    }
-});
+// =====================================
+// MODAL CLOSE
+// =====================================
 
-// =========================
-// EVENTS SAFE
-// =========================
-document.addEventListener("DOMContentLoaded", () => {
-    initDOM();
-    listenData();
+function tutupModal() {
+    document.getElementById("detailModal").style.display = "none";
+}
 
-    document.getElementById("btnSimpan")?.addEventListener("click", saveData);
+// =====================================
+// APPROVE / REJECT / DELETE
+// =====================================
 
-    document.getElementById("btnReset")?.addEventListener("click", () => {
-        form?.reset();
-        showToast("Form direset");
-    });
+function approve(id) {
+    inovasiRef.child(id).update({ status: "disetujui" })
+        .then(() => {
+            toast("Disetujui");
+            loadData();
+        });
+}
 
-    document.getElementById("btnTambahAnggota")?.addEventListener("click", () => {
-        const div = document.getElementById("daftarAnggota");
-        if (!div) return;
+function reject(id) {
+    inovasiRef.child(id).update({ status: "ditolak" })
+        .then(() => {
+            toast("Ditolak");
+            loadData();
+        });
+}
 
-        const input = document.createElement("input");
-        input.className = "anggota";
-        input.placeholder = "Nama anggota";
-        div.appendChild(input);
-    });
+function hapus(id) {
 
-    document.getElementById("btnTambahDasarHukum")?.addEventListener("click", () => {
-        const div = document.getElementById("daftarDasarHukum");
-        if (!div) return;
+    if (!confirm("Hapus data?")) return;
 
-        const input = document.createElement("input");
-        input.className = "dasarHukum";
-        input.placeholder = "Dasar hukum";
-        div.appendChild(input);
-    });
-});
+    inovasiRef.child(id).remove()
+        .then(() => {
+            toast("Terhapus");
+            loadData();
+        });
+}
 
-// =========================
-// START LISTENER (SAFETY CALL)
-// =========================
-listenData();
+// =====================================
+// SEARCH + FILTER
+// =====================================
+
+function cariData() {
+
+    const q = document.getElementById("search").value.toLowerCase();
+
+    const hasil = allData.filter(x =>
+        x.nip.toLowerCase().includes(q) ||
+        x.nama.toLowerCase().includes(q) ||
+        x.judul.toLowerCase().includes(q)
+    );
+
+    renderTable(hasil);
+}
+
+function applyFilter() {
+
+    let data = [...allData];
+
+    const status = document.getElementById("filterStatus").value;
+    const kategori = document.getElementById("filterKategori").value;
+
+    if (status) data = data.filter(x => x.status === status);
+    if (kategori) data = data.filter(x => x.kategori === kategori);
+
+    renderTable(data);
+}
+
+// =====================================
+// INIT
+// =====================================
+
+window.onload = loadData;
