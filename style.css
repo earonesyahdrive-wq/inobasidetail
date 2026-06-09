@@ -1,401 +1,330 @@
-/* =========================
-   ROOT THEME (ORANGE - YELLOW)
-========================= */
+/* ===================================== */
+/* ROOT THEME */
+/* ===================================== */
+
 :root {
-    --primary: #ff8c42;
-    --secondary: #ffd166;
-    --accent: #ffb703;
-
-    --bg: #fff8ef;
-    --card: #ffffff;
+    --orange: #f97316;
+    --orange-dark: #ea580c;
+    --yellow: #fef3c7;
+    --yellow-soft: #fff7e6;
+    --white: #ffffff;
     --text: #1f2937;
-    --muted: #6b7280;
-    --border: #f3e5d8;
-
-    --shadow: 0 10px 25px rgba(0,0,0,0.08);
+    --gray: #e5e7eb;
 }
 
-/* =========================
-   GLOBAL RESET (STABLE)
-========================= */
+/* ===================================== */
+/* GLOBAL */
+/* ===================================== */
+
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
+    font-family: Arial, sans-serif;
 }
 
 body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: var(--bg);
+    background: var(--yellow-soft);
     color: var(--text);
-    overflow-x: hidden;
-    -webkit-text-size-adjust: 100%;
-    -webkit-tap-highlight-color: transparent;
 }
 
-/* =========================
-   CONTAINER
-========================= */
-.container {
-    max-width: 1150px;
-    margin: auto;
-    padding: 20px;
-}
+/* ===================================== */
+/* HEADER */
+/* ===================================== */
 
-/* =========================
-   HERO
-========================= */
-.hero {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
+.header {
+    background: var(--orange);
     color: white;
     padding: 20px;
-    border-radius: 14px;
-    text-align: center;
-    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.hero h1 {
-    margin: 0;
-    font-size: 22px;
+.header h1 {
+    font-size: 20px;
 }
 
-.hero p {
-    font-size: 13px;
+.header p {
+    font-size: 12px;
     opacity: 0.9;
 }
 
-/* HERO STATS */
-.hero-stats {
+/* ===================================== */
+/* BUTTON */
+/* ===================================== */
+
+button {
+    cursor: pointer;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.btn-primary {
+    background: white;
+    color: var(--orange);
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background: var(--yellow);
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-success {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-warning {
+    background: #facc15;
+    color: black;
+}
+
+/* ===================================== */
+/* DASHBOARD */
+/* ===================================== */
+
+.dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    margin-top: 12px;
+    padding: 15px;
 }
 
-.hero-stats div {
-    background: rgba(255,255,255,0.15);
-    padding: 10px;
+.stat-card {
+    background: white;
+    padding: 15px;
     border-radius: 10px;
+    border-left: 5px solid var(--orange);
 }
 
-.hero-stats h2 {
-    font-size: 16px;
-    margin: 0;
+.stat-title {
+    font-size: 12px;
+    color: gray;
 }
 
-.hero-stats span {
-    font-size: 11px;
+.stat-value {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 5px;
 }
 
-.hero {
-    text-align: center;
-    padding: 20px 10px; /* lebih kecil dari sebelumnya */
-    color: #000; /* semua teks hitam */
-}
+/* ===================================== */
+/* CARD / FILTER */
+/* ===================================== */
 
-.hero h1 {
-    font-size: 22px; /* lebih kecil */
-    font-weight: 600;
-    color: #000;
-    margin-bottom: 5px;
-}
-
-.hero p {
-    font-size: 13px;
-    color: #000;
-    opacity: 0.8;
-    margin-bottom: 15px;
-}
-
-.hero-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.hero-stats div {
-    padding: 8px;
-    border-radius: 10px;
-    background: #f5f5f5;
-    color: #000;
-}
-
-.hero-stats h2 {
-    font-size: 16px;
-    margin: 0;
-    color: #000;
-}
-
-.hero-stats span {
-    font-size: 11px;
-    color: #000;
-    opacity: 0.7;
-}
-
-/* =========================
-   CARD SYSTEM
-========================= */
 .card {
-    background: var(--card);
-    margin-top: 18px;
-    padding: 18px;
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-}
-
-/* =========================
-   FORM SYSTEM
-========================= */
-label {
-    font-size: 12px;
-    color: var(--muted);
-}
-
-input, select, textarea {
-    width: 100%;
+    background: white;
+    margin: 10px 15px;
     padding: 10px;
-    margin: 6px 0 12px;
-    border: 1px solid var(--border);
     border-radius: 10px;
-    outline: none;
-    background: #fff;
-    transition: 0.2s ease;
-    font-size: 16px; /* FIX MOBILE ZOOM */
 }
 
-input:focus, select:focus, textarea:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(255,140,66,0.15);
-}
-
-/* =========================
-   BUTTON SYSTEM (PROFESSIONAL)
-========================= */
-button {
-    border: none;
-    padding: 9px 12px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: 0.2s ease;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-}
-
-button:active {
-    transform: scale(0.97);
-}
-
-/* PRIMARY BUTTON */
-.btn-save {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
-}
-
-/* SECONDARY */
-.btn-edit {
-    background: #f3f4f6;
-    color: #333;
-}
-
-/* =========================
-   TABLE WRAPPER
-========================= */
-.table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* =========================
-   TABLE DESIGN (PROFESSIONAL)
-========================= */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    font-size: 12px;
-    min-width: 650px;
-}
-
-table thead {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-}
-
-table th {
-    padding: 12px;
-    text-align: left;
-}
-
-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #f1e7dc;
-    color: #374151;
-}
-
-table tbody tr:hover {
-    background: #fff3e6;
-}
-
-table tbody tr:nth-child(even) {
-    background: #fffaf3;
-}
-
-/* =========================
-   ACTION BUTTONS
-========================= */
-.aksi-btn {
+.toolbar {
     display: flex;
-    gap: 6px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    color: white;
+input, select {
+    padding: 8px;
+    border: 1px solid var(--gray);
+    border-radius: 6px;
+    font-size: 12px;
 }
 
-.btn-detail { background: #ff8c42; }
-.btn-analisa { background: #ffb703; color: #111; }
-.btn-hapus { background: #ef4444; }
+/* ===================================== */
+/* TABLE */
+/* ===================================== */
 
-/* =========================
-   PROGRESS BAR
-========================= */
-.progress {
+.table-container {
+    margin: 10px 15px;
+    overflow-x: auto;
+}
+
+table {
     width: 100%;
-    height: 8px;
-    background: #f3e5d8;
+    border-collapse: collapse;
+    background: white;
     border-radius: 10px;
     overflow: hidden;
 }
 
-.progress-bar {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    transition: 0.3s ease;
-}
-
-/* =========================
-   LOADING
-========================= */
-.loading {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    background: var(--primary);
+th {
+    background: var(--orange);
     color: white;
-    padding: 10px 14px;
-    border-radius: 10px;
-    display: none;
-    z-index: 9999;
+    padding: 10px;
+    font-size: 12px;
 }
 
-/* =========================
-   TOAST
-========================= */
+td {
+    padding: 10px;
+    border-bottom: 1px solid var(--gray);
+    font-size: 12px;
+}
+
+tr:hover {
+    background: var(--yellow);
+}
+
+/* ===================================== */
+/* ACTION BUTTONS */
+/* ===================================== */
+
+.action-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* ===================================== */
+/* PROBABILITAS */
+/* ===================================== */
+
+.prob-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.prob-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--gray);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.prob-fill {
+    height: 100%;
+    background: var(--orange);
+}
+
+/* ===================================== */
+/* BADGE STATUS */
+/* ===================================== */
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    color: white;
+}
+
+.badge-diajukan {
+    background: #f97316;
+}
+
+.badge-disetujui {
+    background: #22c55e;
+}
+
+.badge-ditolak {
+    background: #ef4444;
+}
+
+/* ===================================== */
+/* MODAL */
+/* ===================================== */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    padding: 15px;
+    border-radius: 10px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ===================================== */
+/* LOADING */
+/* ===================================== */
+
+.loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 4px solid var(--gray);
+    border-top: 4px solid var(--orange);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===================================== */
+/* TOAST */
+/* ===================================== */
+
 .toast {
     position: fixed;
     bottom: 20px;
-    right: 20px;
-    background: #111827;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--orange);
     color: white;
-    padding: 12px 16px;
-    border-radius: 10px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 12px;
     opacity: 0;
-    transform: translateY(10px);
-    transition: 0.25s ease;
-    pointer-events: none;
-    z-index: 9999;
+    transition: 0.3s;
 }
 
 .toast.show {
     opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
 }
 
-/* =========================
-   MODAL (STABLE + MODERN)
-========================= */
-#modalDetail {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    z-index: 9999;
-    backdrop-filter: blur(3px);
-}
+/* ===================================== */
+/* MOBILE RESPONSIVE */
+/* ===================================== */
 
-#modalDetail > div {
-    width: 100%;
-    max-width: 900px;
-    max-height: 85vh;
-    overflow: auto;
-    background: var(--card);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    animation: modalFade 0.15s ease;
-}
-
-@keyframes modalFade {
-    from { transform: scale(0.98); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* =========================
-   IMAGE / TABLE SAFETY
-========================= */
-img, table {
-    max-width: 100%;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
 @media (max-width: 768px) {
 
-    .hero-stats {
+    .dashboard {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    table {
-        min-width: 100%;
-        font-size: 11px;
+    .header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
     }
 
-    table th, table td {
-        padding: 8px;
+    .toolbar {
+        flex-direction: column;
     }
-
-    .aksi-btn {
-        justify-content: flex-end;
-    }
-
-    button {
-        font-size: 10px;
-        padding: 5px 8px;
-    }
-   }
+}
